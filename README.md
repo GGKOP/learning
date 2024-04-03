@@ -95,8 +95,6 @@ If you see the above then...
 
 ### It worked!
 
-You are ready to go. We have a few recommended practices and things to do.
-
 * Use packages and following conventions for [structure](https://www.scala-sbt.org/1.x/docs/Directories.html) and [naming](http://docs.scala-lang.org/style/naming-conventions.html)
 * Package names should be clearly reflected in the testing hierarchy
 * Build tests for all your work
@@ -105,7 +103,3 @@ You are ready to go. We have a few recommended practices and things to do.
   * You can remove this dependency in the build.sbt file if you want to
 * Change the name of your project in the build.sbt file
 * Change your README.md
-
-## Problems? Questions?
-
-Check out the [Chisel Users Community](https://www.chisel-lang.org/community.html) page for links to get in contact!

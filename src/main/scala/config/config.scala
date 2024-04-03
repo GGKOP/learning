@@ -23,4 +23,5 @@ object Configs{
     val REG_NUMS = 32
     val REG_NUMS_LOG= ceil(log(REG_NUMS) / log(2)).toInt
     val MEM_DATA_SIZE = 1024
+    val CSR_SIZE =4096 
 }
