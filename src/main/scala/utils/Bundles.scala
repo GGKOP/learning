@@ -4,6 +4,7 @@ import chisel3._
 import config.Configs._
 import utils.OP_TYPES._
 import utils.LS_TYPES._
+import utils.Consts._
 
 class BundleControl extends Bundle{
     val ctrlJump = Output(Bool())
@@ -16,6 +17,8 @@ class BundleControl extends Bundle{
     val ctrlOP =Output(UInt(OP_TYPES_WIDTH.W))
     val ctrlSigned =Output(Bool())
     val ctrlLSType = Output(UInt(LS_TYPE_WIDTH.W))
+    val ctrlCsr =Output(UInt(CSR_LEN.W))
+    val ctrlCsrAddr =Ouput(UInt(CSR_ADDR_LEN.W))
 }
 
 class BundleReg extends Bundle{

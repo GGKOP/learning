@@ -7,6 +7,7 @@ import config.Configs._
 import utils._
 import utils.OP_TYPES._
 import utils.LS_TYPES._
+import utils.
 
 class DecoderIO extends Bundle{
     val inst = Input(UInt(INST_WIDTH.W))
@@ -30,6 +31,7 @@ class  Decoder extends Module{
     val imm_b = Cat(Fill(20, io.inst(31)), io.inst(7), io.inst(30, 25), io.inst(11, 8), 0.U(1.W))
     val imm_u = Cat(io.inst(31, 12), Fill(12, 0.U))
     val imm_j = Cat(Fill(12, io.inst(31)), io.inst(31), io.inst(19, 12), io.inst(20), io.inst(30, 21), Fill(1, 0.U))
+    val imm_z = Cat(Fill(27,0.U),io.inst(19,15))
     val imm_csr =Cat(Fill(27,0.U),io.inst(19,15) )
 
     val imm_shamt = Cat(Fill(27,0.U), io.inst(24,20))
@@ -52,23 +54,83 @@ class  Decoder extends Module{
     val ctrlSigned =WireDefault(true.B)
     val ctrlLSType = WireDefault(LS_W)
     val ctrlcsr =WireDefault(false.B)
-    val ctrlcsrsign = WireDefault(0.U(CSR_OP_WIDTH.W))
+    val ctrlcsrsign = WireDefault(0.U(CSR_OP_WIDTH.W)) 
+
+    //chisel-listlookup, 
+    //ListLookup component operates by mapping 
+    //input values to output values based on a predefined list or sequence of data. 
+    //The component searches through this list to find the appropriate output corresponding to the given input. 
+    //This process is akin to an indexed retrieval where the input value acts as an index to access the desired data from the list.
+    val csignals = ListLookup(io.inst,
+                List(ALU_X    , OP1_RS1, OP2_RS2, MEN_X, REN_X, WB_X  , CSR_X),
+        Array(
+        LW    -> List(ALU_ADD  , OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_MEM, CSR_X),
+        SW    -> List(ALU_ADD  , OP1_RS1, OP2_IMS, MEN_S, REN_X, WB_X  , CSR_X),
+        ADD   -> List(ALU_ADD  , OP1_RS1, OP2_RS2, MEN_X, REN_S, WB_ALU, CSR_X),
+        ADDI  -> List(ALU_ADD  , OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_ALU, CSR_X),
+        SUB   -> List(ALU_SUB  , OP1_RS1, OP2_RS2, MEN_X, REN_S, WB_ALU, CSR_X),
+        AND   -> List(ALU_AND  , OP1_RS1, OP2_RS2, MEN_X, REN_S, WB_ALU, CSR_X),
+        OR    -> List(ALU_OR   , OP1_RS1, OP2_RS2, MEN_X, REN_S, WB_ALU, CSR_X),
+        XOR   -> List(ALU_XOR  , OP1_RS1, OP2_RS2, MEN_X, REN_S, WB_ALU, CSR_X),
+        ANDI  -> List(ALU_AND  , OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_ALU, CSR_X),
+        ORI   -> List(ALU_OR   , OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_ALU, CSR_X),
+        XORI  -> List(ALU_XOR  , OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_ALU, CSR_X),
+        SLL   -> List(ALU_SLL  , OP1_RS1, OP2_RS2, MEN_X, REN_S, WB_ALU, CSR_X),
+        SRL   -> List(ALU_SRL  , OP1_RS1, OP2_RS2, MEN_X, REN_S, WB_ALU, CSR_X),
+        SRA   -> List(ALU_SRA  , OP1_RS1, OP2_RS2, MEN_X, REN_S, WB_ALU, CSR_X),
+        SLLI  -> List(ALU_SLL  , OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_ALU, CSR_X),
+        SRLI  -> List(ALU_SRL  , OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_ALU, CSR_X),
+        SRAI  -> List(ALU_SRA  , OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_ALU, CSR_X),
+        SLT   -> List(ALU_SLT  , OP1_RS1, OP2_RS2, MEN_X, REN_S, WB_ALU, CSR_X),
+        SLTU  -> List(ALU_SLTU , OP1_RS1, OP2_RS2, MEN_X, REN_S, WB_ALU, CSR_X),
+        SLTI  -> List(ALU_SLT  , OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_ALU, CSR_X),
+        SLTIU -> List(ALU_SLTU , OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_ALU, CSR_X),
+        BEQ   -> List(BR_BEQ   , OP1_RS1, OP2_RS2, MEN_X, REN_X, WB_X  , CSR_X),
+        BNE   -> List(BR_BNE   , OP1_RS1, OP2_RS2, MEN_X, REN_X, WB_X  , CSR_X),
+        BGE   -> List(BR_BGE   , OP1_RS1, OP2_RS2, MEN_X, REN_X, WB_X  , CSR_X),
+        BGEU  -> List(BR_BGEU  , OP1_RS1, OP2_RS2, MEN_X, REN_X, WB_X  , CSR_X),
+        BLT   -> List(BR_BLT   , OP1_RS1, OP2_RS2, MEN_X, REN_X, WB_X  , CSR_X),
+        BLTU  -> List(BR_BLTU  , OP1_RS1, OP2_RS2, MEN_X, REN_X, WB_X  , CSR_X),
+        JAL   -> List(ALU_ADD  , OP1_PC , OP2_IMJ, MEN_X, REN_S, WB_PC , CSR_X),
+        JALR  -> List(ALU_JALR , OP1_RS1, OP2_IMI, MEN_X, REN_S, WB_PC , CSR_X),
+        LUI   -> List(ALU_ADD  , OP1_X  , OP2_IMU, MEN_X, REN_S, WB_ALU, CSR_X),
+        AUIPC -> List(ALU_ADD  , OP1_PC , OP2_IMU, MEN_X, REN_S, WB_ALU, CSR_X),
+        CSRRW -> List(ALU_COPY1, OP1_RS1, OP2_X  , MEN_X, REN_S, WB_CSR, CSR_W),
+        CSRRWI-> List(ALU_COPY1, OP1_IMZ, OP2_X  , MEN_X, REN_S, WB_CSR, CSR_W),
+        CSRRS -> List(ALU_COPY1, OP1_RS1, OP2_X  , MEN_X, REN_S, WB_CSR, CSR_S),
+        CSRRSI-> List(ALU_COPY1, OP1_IMZ, OP2_X  , MEN_X, REN_S, WB_CSR, CSR_S),
+        CSRRC -> List(ALU_COPY1, OP1_RS1, OP2_X  , MEN_X, REN_S, WB_CSR, CSR_C),
+        CSRRCI-> List(ALU_COPY1, OP1_IMZ, OP2_X  , MEN_X, REN_S, WB_CSR, CSR_C),
+        ECALL -> List(ALU_X    , OP1_X  , OP2_X  , MEN_X, REN_X, WB_X  , CSR_E)
+            )
+        )
+    val ctrlOP :: op1_sel :: op2_sel :: mem_wen :: rf_wen :: wb_sel :: csr_cmd :: Nil = csignals
 
 
+    //op1_data,op2_data
+    val op1_data = MuxCase(0.U(WORD_LEN.W), Seq(
+        (op1_sel === OP1_RS1) -> io.bundleReg.rs1,
+        (op1_sel === OP1_PC)  -> pc_reg,
+        (op1_sel === OP1_IMZ) -> imm_z
+    ))
+    val op2_data = MuxCase(0.U(WORD_LEN.W), Seq(
+        (op2_sel === OP2_RS2) -> io.bundleReg.rs2,
+        (op2_sel === OP2_IMI) -> imm_i,
+        (op2_sel === OP2_IMS) -> imm_s,
+        (op2_sel === OP2_IMJ) -> imm_j,
+        (op2_sel === OP2_IMU) -> imm_u
+    ))
 
+    val csr_addr = Mux(csr_cmd === CSR_E, 0x342.U(CSR_ADDR_LEN.W), inst(31,20))
 
     switch (io.inst(6,2)){
         is ("b011101".U,"b00101".U){
-            ctrlALUSrc :=true.B
-            ctrlOP :=OP_ADD
-            imm :=imm_u
         }
 
 
         is("b11011".U){
             ctrlALUSrc :=true.B
             ctrlJump := true.B
-            ctrlOP := OP_ADD
             ctrlJAL :=true.B
             imm :=imm_j
         }
@@ -77,12 +139,10 @@ class  Decoder extends Module{
             ctrlALUSrc :=true.B
             when(io.inst(6,2)==="b11001".U){
                 ctrlJump :=true.B
-                ctrlOP :=OP_ADD
                 imm :=imm_i
             }
             .elsewhen (io.inst(6,2)==="b00000".U){
                 ctrlLoad :=true.B
-                ctrlOP := OP_ADD
                 imm :=imm_i
                 when(io.inst(14,12)=== "b100".U | io.inst(14,12)=== "b101".U){
                     ctrlSigned :=false.B
@@ -93,13 +153,10 @@ class  Decoder extends Module{
                 imm :=imm_shamt
                 switch(Cat(io.inst(30),io.inst(14,12))){
                     is ("b0001".U){
-                        ctrlOP :=OP_SLL
                     }
                     is("b0101".U){
-                        ctrlOP := OP_SRL
                     }
                     is("b1101".U){
-                        ctrlOP := OP_SRA
                     }
                 }
             }
@@ -107,20 +164,14 @@ class  Decoder extends Module{
                 imm:=imm_i
                 switch(io.inst(14,12)){
                     is("b000".U){
-                        ctrlOP :=OP_ADD
                     }
-                    is("b010".U){
-                        ctrlOP := OP_LT
-                    }
+                    is("b010".U){              }
                     is("b100".U){
-                        ctrlOP :=OP_LT
                         ctrlSigned :=false.B
                     }
                     is("b110".U){
-                        ctrlOP :=OP_OR
                     }
                     is("b111".U){
-                        ctrlOP :=OP_AND
                     }
                 }
             }
@@ -134,28 +185,23 @@ class  Decoder extends Module{
             switch (io.inst(14, 12)) {
                 // BEQ
                 is ("b000".U) {
-                    ctrlOP := OP_EQ
                 }
                 // BNE
                 is ("b001".U) {
-                    ctrlOP := OP_NEQ
                 }
                 // BLT
                 is ("b100".U) {
-                    ctrlOP := OP_LT
                 }
                 // BGE
                 is ("b101".U) {
-                    ctrlOP := OP_GE
+
                 }
                 // BLTU
                 is ("b110".U) {
-                    ctrlOP := OP_LT
                     ctrlSigned := false.B
                 }
                 // BGEU
                 is ("b111".U) {
-                    ctrlOP := OP_GE
                     ctrlSigned := false.B
                 }
             }
@@ -164,7 +210,6 @@ class  Decoder extends Module{
             ctrlALUSrc := true.B
             ctrlStore := true.B
             ctrlRegWrite := false.B
-            ctrlOP := OP_ADD
             imm := imm_s
             when (io.inst(14, 12) === "b000".U) {
                 ctrlLSType := LS_B
@@ -179,74 +224,42 @@ class  Decoder extends Module{
                 // ADD, SUB
                 is ("b000".U) {
                     when (io.inst(30)) {
-                        ctrlOP := OP_SUB
                     } .otherwise {
-                        ctrlOP := OP_ADD
+
                     }
                 }
                 // SLL
                 is ("b001".U) {
-                    ctrlOP := OP_SLL
                 }
                 // SLT
                 is ("b010".U) {
-                    ctrlOP := OP_LT
                 }
                 // SLTU
                 is ("b011".U) {
-                    ctrlOP := OP_LT
                     ctrlOP := false.B
                 }
                 // XOR
                 is ("b100".U) {
-                    ctrlOP := OP_XOR
                 }
                 // SRL, SRA
                 is ("b101".U) {
                     when (io.inst(30)) {
-                        ctrlOP := OP_SRA
                     } .otherwise {
-                        ctrlOP := OP_SRL
                     }
                 }
                 // OR
                 is ("b110".U) {
-                    ctrlOP := OP_OR
                 }
                 // AND
                 is ("b111".U) {
-                    ctrlOP := OP_AND
                 }
             }
         }
-        is ("b11100".U){
-            ctrlcsr := true.B
-            switch (io.inst(14,12)){
-                is("b001".U){
-                    ctrlcsrsign :=CSR_W
-                }
-                is("b101".U){
-                    ctrlcsrsign := CSR_WI
-                }
-                is("b010".U){
-                    ctrlcsrsign := CSR_S 
-                }
-                is("b110".U){
-                    ctrlcsrsign := CSR_SI
-                }
-                is("b011".U){
-                    ctrlcsrsign := CSR_C
-                }
-                is("b111".U){
-                    ctrlcsrsign := CSR_CI
-                }
-            }
-        }
-
 
     }
     io.bundleCtrl.ctrlALUSrc := ctrlALUSrc
     io.bundleCtrl.ctrlBranch := ctrlBranch
+    io.bundleCtrl.ctrlCsr := csr_cmd
     io.bundleCtrl.ctrlJAL := ctrlJAL
     io.bundleCtrl.ctrlJump := ctrlJump
     io.bundleCtrl.ctrlLoad := ctrlLoad
@@ -255,5 +268,6 @@ class  Decoder extends Module{
     io.bundleCtrl.ctrlSigned := ctrlSigned
     io.bundleCtrl.ctrlStore := ctrlStore
     io.bundleCtrl.ctrlLSType := ctrlLSType
+    io.bundleCtrl.ctrlCsrAddr :=csr_addr
     io.imm := imm
 }

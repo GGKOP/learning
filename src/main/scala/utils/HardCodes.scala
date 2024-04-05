@@ -2,22 +2,6 @@ package utils
 
 import chisel3._
 
-object OP_TYPES{
-    val OP_TYPES_WIDTH = 4
-    val OP_NOP = "b0000".U
-    val OP_ADD = "b0001".U
-    val OP_SUB = "b0010".U
-    val OP_AND = "b0100".U
-    val OP_OR = "b0101".U
-    val OP_XOR = "b0111".U
-    val OP_SLL = "b1000".U
-    val OP_SRL = "b1001".U
-    val OP_SRA = "b1011".U
-    val OP_EQ = "b1100".U
-    val OP_NEQ = "b1101".U
-    val OP_LT = "b1110".U
-    val OP_GE = "b1111".U
-}
 
 object LS_TYPES {
     val LS_TYPE_WIDTH = 2
@@ -50,29 +34,29 @@ object Consts {
   val VL_ADDR       = 0xC20
   val VTYPE_ADDR    = 0xC21
 
-  val EXE_FUN_LEN = 5
-  val ALU_X       =  0.U(EXE_FUN_LEN.W)
-  val ALU_ADD     =  1.U(EXE_FUN_LEN.W)
-  val ALU_SUB     =  2.U(EXE_FUN_LEN.W)
-  val ALU_AND     =  3.U(EXE_FUN_LEN.W)
-  val ALU_OR      =  4.U(EXE_FUN_LEN.W)
-  val ALU_XOR     =  5.U(EXE_FUN_LEN.W)
-  val ALU_SLL     =  6.U(EXE_FUN_LEN.W)
-  val ALU_SRL     =  7.U(EXE_FUN_LEN.W)
-  val ALU_SRA     =  8.U(EXE_FUN_LEN.W)
-  val ALU_SLT     =  9.U(EXE_FUN_LEN.W)
-  val ALU_SLTU    = 10.U(EXE_FUN_LEN.W)
-  val BR_BEQ      = 11.U(EXE_FUN_LEN.W)
-  val BR_BNE      = 12.U(EXE_FUN_LEN.W)
-  val BR_BLT      = 13.U(EXE_FUN_LEN.W)
-  val BR_BGE      = 14.U(EXE_FUN_LEN.W)
-  val BR_BLTU     = 15.U(EXE_FUN_LEN.W)
-  val BR_BGEU     = 16.U(EXE_FUN_LEN.W)
-  val ALU_JALR    = 17.U(EXE_FUN_LEN.W)
-  val ALU_COPY1   = 18.U(EXE_FUN_LEN.W)
-  val ALU_VADDVV  = 19.U(EXE_FUN_LEN.W)
-  val VSET        = 20.U(EXE_FUN_LEN.W)
-  val ALU_PCNT    = 21.U(EXE_FUN_LEN.W)
+  val OP_TYPES_WIDTH = 5
+  val ALU_X       =  0.U(OP_TYPES_WIDTH.W)
+  val ALU_ADD     =  1.U(OP_TYPES_WIDTH.W)
+  val ALU_SUB     =  2.U(OP_TYPES_WIDTH.W)
+  val ALU_AND     =  3.U(OP_TYPES_WIDTH.W)
+  val ALU_OR      =  4.U(OP_TYPES_WIDTH.W)
+  val ALU_XOR     =  5.U(OP_TYPES_WIDTH.W)
+  val ALU_SLL     =  6.U(OP_TYPES_WIDTH.W)
+  val ALU_SRL     =  7.U(OP_TYPES_WIDTH.W)
+  val ALU_SRA     =  8.U(OP_TYPES_WIDTH.W)
+  val ALU_SLT     =  9.U(OP_TYPES_WIDTH.W)
+  val ALU_SLTU    = 10.U(OP_TYPES_WIDTH.W)
+  val BR_BEQ      = 11.U(OP_TYPES_WIDTH.W)
+  val BR_BNE      = 12.U(OP_TYPES_WIDTH.W)
+  val BR_BLT      = 13.U(OP_TYPES_WIDTH.W)
+  val BR_BGE      = 14.U(OP_TYPES_WIDTH.W)
+  val BR_BLTU     = 15.U(OP_TYPES_WIDTH.W)
+  val BR_BGEU     = 16.U(OP_TYPES_WIDTH.W)
+  val ALU_JALR    = 17.U(OP_TYPES_WIDTH.W)
+  val ALU_COPY1   = 18.U(OP_TYPES_WIDTH.W)
+  val ALU_VADDVV  = 19.U(OP_TYPES_WIDTH.W)
+  val VSET        = 20.U(OP_TYPES_WIDTH.W)
+  val ALU_PCNT    = 21.U(OP_TYPES_WIDTH.W)
 
   val OP1_LEN = 2
   val OP1_RS1 = 0.U(OP1_LEN.W)

@@ -15,12 +15,7 @@ class TopIO extends Bundle {
     val rs1 = Output(UInt(DATA_WIDTH.W))
     val rs2 = Output(UInt(DATA_WIDTH.W))
     val imm = Output(UInt(DATA_WIDTH.W))
-    val resultBranch = Output(Bool())
-    val result = Output(UInt(DATA_WIDTH.W))
-}
-
-
-
+    val resultBranch = Out 
 class Top extends Module {
     val io = IO (new TopIO())
     
@@ -47,6 +42,8 @@ class Top extends Module {
 
     registers.io.ctrlwrite <> controller.io.bundleControlOut.ctrlRegWrite
     registers.io.ctrlJump <> controller.io.bundleControlOut.ctrlJump
+    registers.io.ctrlCsr <> controller.io.bundleControlOut.ctrlCsr
+    registers.io.ctrlCsrAddr <>controller.io.bundleControlOut.ctrlCsrAddr
     registers.io.pc <> pcReg.io.addr
     registers.io.dataWrite <> memdata.io.result
     registers.io.bundleReg <> decoder.io.bundleReg
@@ -55,6 +52,7 @@ class Top extends Module {
     alu.io.imm <> decoder.io.imm
     alu.io.pc <> pcReg.io.addr
     alu.io.bundleAluControl <> controller.io.bundleAluControl
+    
 
     controller.io.bundleControlIn <> decoder.io.bundleCtrl
 

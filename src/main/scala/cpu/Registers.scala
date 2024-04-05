@@ -8,7 +8,7 @@ import utils._
 
 import utils.OP_TYPES._
 import utils.LS_TYPES._
-import utils.CSR_OP._
+import utils.Consts._
 
 
 class RegistersIO extends Bundle {
@@ -19,9 +19,8 @@ class RegistersIO extends Bundle {
     val bundleReg = Flipped(new BundleReg)
     val dataRead1 = Output(UInt(DATA_WIDTH.W))
     val dataRead2 = Output(UInt(DATA_WIDTH.W))
-    val ctrlcsr =Input(Bool())
-    val ctrlcsrsign =Input(OP.CSR_OP_WIDTH.W)
-    val addr_Csr = Input(CSR_SIZE.W)
+    val ctrlCsr =Input(UInt(CSR_LEN.W))
+    val ctrlCsrAddr =Input(UInt(CSR_ADDR_LEN.W))
 }
 
 
@@ -44,28 +43,16 @@ class Registers extends Module{
             regs(io.bundleReg.rd) := io.dataWrite
         }
     }
-
-    when(io.ctrlcsr){
-       switch(io.ctrlcsrsign){
-            is(CSR_W){
-                regscsr(io.addr_Csr) := io.dataRead1
-            }
-            is(CSR_WI){
-                regscsr(io.addr_Csr) := io.bundleReg.rs1
-            }
-            is(CSR_S){
-                 regscsr(io.addr_Csr) :=(csr_rdata | io.dataRead1)
-            }
-            is(CSR_SI){
-                 regscsr(io.addr_Csr) :=(csr_rdata | io.bundleReg.rs1)
-            }
-            is(CSR_C){
-                regscsr(io.addr_Csr) :=(csr_rdata & ~ io.dataRead1)
-            }
-            is(CSR_C){
-                regscsr(io.addr_Csr) :=(csr_rdata & ~ io.bundleReg.rs1)
-            }
-
-       }
+    val csr_rdata = csr_regfile(csr_addr)
+    val csr_wdata = MuxCase(0.U(WORD_LEN.W), Seq(
+        (csr_cmd === CSR_W) -> op1_data,
+        (csr_cmd === CSR_S) -> (csr_rdata | op1_data),
+        (csr_cmd === CSR_C) -> (csr_rdata & ~op1_data),
+        (csr_cmd === CSR_E) -> 11.U(WORD_LEN.W)
+    ))
+    
+    when(csr_cmd > 0.U){
+        csr_regfile(csr_addr) := csr_wdata
     }
+
 }
